@@ -41,7 +41,7 @@ function OnSpawningEntity(World, Entity)
 		return false
 	end
 	local DistanceVector = (Vector3d(math.floor(Entity:GetPosX() / 16), 0, math.floor(Entity:GetPosZ() / 16)) - WORLD_SPAWNS[World:GetName()])
-	local Distance = DistanceVector:SqrLength()
+	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE then
 		return true -- Don't spawn any entities outside the range.
 	end
@@ -53,7 +53,7 @@ function OnPlayerRightClick(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, 
 	end
 	local World = Player:GetWorld()
 	local DistanceVector = (Vector3d(math.floor(BlockX / 16), 0, math.floor(BlockZ / 16)) - WORLD_SPAWNS[World:GetName()])
-	local Distance = DistanceVector:SqrLength()
+	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE then	
 		return true
 	end
@@ -62,7 +62,7 @@ end
 function OnPlayerBreakingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockType, BlockMeta)
 	local World = Player:GetWorld()
 	local DistanceVector = (Vector3d(math.floor(BlockX / 16), 0, math.floor(BlockZ / 16)) - WORLD_SPAWNS[World:GetName()])
-	local Distance = DistanceVector:SqrLength()
+	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE then	
 		return true
 	end
@@ -70,7 +70,7 @@ end
 
 function OnChunkGenerating(World, ChunkX, ChunkZ, ChunkDesc)
 	local DistanceVector = (Vector3d(ChunkX, 0, ChunkZ) - WORLD_SPAWNS[World:GetName()])
-	local Distance = DistanceVector:SqrLength()
+	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE then
 		GenerateChunkOutOfRange(ChunkDesc) -- Generate the chunk as the user says we should generate it.
 	end	
@@ -82,7 +82,7 @@ function OnPlayerMoving(Player)
 	local PlayerChunk = Vector3d(Player:GetChunkX(), 0, Player:GetChunkZ())
 	local PlayerCoords = Vector3d(Player:GetPosX(), 0, Player:GetPosZ())
 	local DistanceVector = (PlayerChunk - WORLD_SPAWNS[WorldName])
-	local Distance = DistanceVector:SqrLength()
+	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE * 3 then 
 		-- It's not worth calculating where the player should spawn since he is far behind the border. 
 		--Just teleport him to spawn.
