@@ -29,6 +29,8 @@ function Initialize(Plugin)
 	IniFile:WriteFile(Plugin:GetLocalFolder() .. "/Config.ini")
 	
 	CreateChunkData()
+	
+	LOG("Initialized LimitWorld")
 	return true
 end
 
@@ -121,7 +123,7 @@ function CreateChunkData()
 	local CurrentLayer = 0
 	for Index, Content in pairs(Layers) do
 		local BlockType, BlockMeta = GetBlockTypeMeta(Content[2])
-		if not BlockType then -- Skip this layer
+		if not BlockType or not IsValidBlock(BlockType) then -- Skip this layer
 			LOGWARN("There is something wrong in the composition. Skipping layer " .. Content[1] .. "x" .. Content[2])
 		else
 			BlockArea:FillRelCuboid(0, 15, CurrentLayer, CurrentLayer + Content[1] - 1, 0, 15, 3, BlockType, BlockMeta)
