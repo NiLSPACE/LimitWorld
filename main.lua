@@ -19,6 +19,7 @@ function Initialize(Plugin)
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_RIGHT_CLICK, OnPlayerRightClick)
 	cPluginManager.AddHook(cPluginManager.HOOK_SPAWNING_ENTITY, OnSpawningEntity)
 	
+	cPluginManager.AddHook(cPluginManager.HOOK_WORLD_TICK, OnWorldTick) -- Needed to check the spawn of each world.
 	local IniFile = cIniFile()
 	if not (IniFile:ReadFile(Plugin:GetLocalFolder() .. "/Config.ini")) then
 		LOGWARN("[LIMITWORLD] Could not read the config file. Using default!")
@@ -27,14 +28,18 @@ function Initialize(Plugin)
 	CHUNK_COMPISITION = IniFile:GetValueSet("Chunk", "Composition", "61x7;1x8")
 	IniFile:WriteFile(Plugin:GetLocalFolder() .. "/Config.ini")
 	
-	cRoot:Get():ForEachWorld(function(World)
-		WORLD_SPAWNS[World:GetName()] = Vector3d(math.floor(World:GetSpawnX() / 16), 0, math.floor(World:GetSpawnZ() / 16)) -- Get the chunk of the spawn from each world.
-	end)
 	CreateChunkData()
 	return true
 end
 
+function OnWorldTick(World, TimeDelta)
+	WORLD_SPAWNS[World:GetName()] = Vector3d(math.floor(World:GetSpawnX() / 16), 0, math.floor(World:GetSpawnZ() / 16)) -- Get spawn chunks.
+end
+
 function OnSpawningEntity(World, Entity)
+	if Entity:IsPlayer() then
+		return false
+	end
 	local DistanceVector = (Vector3d(math.floor(Entity:GetPosX() / 16), 0, math.floor(Entity:GetPosZ() / 16)) - WORLD_SPAWNS[World:GetName()])
 	local Distance = DistanceVector:SqrLength()
 	if Distance > MAX_RANGE then
@@ -78,7 +83,11 @@ function OnPlayerMoving(Player)
 	local PlayerCoords = Vector3d(Player:GetPosX(), 0, Player:GetPosZ())
 	local DistanceVector = (PlayerChunk - WORLD_SPAWNS[WorldName])
 	local Distance = DistanceVector:SqrLength()
-	if Distance > MAX_RANGE then
+	if Distance > MAX_RANGE * 3 then 
+		-- It's not worth calculating where the player should spawn since he is far behind the border. 
+		--Just teleport him to spawn.
+		Player:TeleportToCoords(World:GetSpawnX(), World:GetSpawnY(), World:GetSpawnZ())
+	elseif Distance > MAX_RANGE then
 		local NewCoords = PlayerCoords
 		if DistanceVector.x > 0 then
 			NewCoords.x = NewCoords.x - (Distance)
