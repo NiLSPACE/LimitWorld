@@ -24,7 +24,7 @@ function Initialize(Plugin)
 	if not (IniFile:ReadFile(Plugin:GetLocalFolder() .. "/Config.ini")) then
 		LOGWARN("[LIMITWORLD] Could not read the config file. Using default!")
 	end
-	MAX_RANGE = IniFile:GetValueSetI("General", "Range", 10)
+	MAX_RANGE = IniFile:GetValueSetF("General", "Range", 10)
 	CHUNK_COMPISITION = IniFile:GetValueSet("Chunk", "Composition", "61x7;1x8")
 	IniFile:WriteFile(Plugin:GetLocalFolder() .. "/Config.ini")
 	
