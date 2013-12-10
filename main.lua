@@ -35,14 +35,14 @@ function Initialize(Plugin)
 end
 
 function OnWorldTick(World, TimeDelta)
-	WORLD_SPAWNS[World:GetName()] = Vector3d(math.floor(World:GetSpawnX() / 16), 0, math.floor(World:GetSpawnZ() / 16)) -- Get spawn chunks.
+	WORLD_SPAWNS[World:GetName()] = Vector2d(math.floor(World:GetSpawnX() / 16), math.floor(World:GetSpawnZ() / 16)) -- Get spawn chunks.
 end
 
 function OnSpawningEntity(World, Entity)
 	if Entity:IsPlayer() then
 		return false
 	end
-	local DistanceVector = (Vector3d(math.floor(Entity:GetPosX() / 16), 0, math.floor(Entity:GetPosZ() / 16)) - WORLD_SPAWNS[World:GetName()])
+	local DistanceVector = Vector2dMinus(Vector2d(Entity:GetChunkX(), Entity:GetChunkZ()), WORLD_SPAWNS[World:GetName()])
 	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE then
 		return true -- Don't spawn any entities outside the range.
@@ -54,7 +54,7 @@ function OnPlayerRightClick(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, 
 		return false
 	end
 	local World = Player:GetWorld()
-	local DistanceVector = (Vector3d(math.floor(BlockX / 16), 0, math.floor(BlockZ / 16)) - WORLD_SPAWNS[World:GetName()])
+	local DistanceVector = Vector2dMinus(Vector2d(math.floor(BlockX / 16), math.floor(BlockZ / 16)), WORLD_SPAWNS[World:GetName()])
 	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE then	
 		return true
@@ -63,7 +63,7 @@ end
 
 function OnPlayerBreakingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockType, BlockMeta)
 	local World = Player:GetWorld()
-	local DistanceVector = (Vector3d(math.floor(BlockX / 16), 0, math.floor(BlockZ / 16)) - WORLD_SPAWNS[World:GetName()])
+	local DistanceVector = Vector2dMinus(Vector2d(math.floor(BlockX / 16), math.floor(BlockZ / 16)), WORLD_SPAWNS[World:GetName()])
 	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE then	
 		return true
@@ -71,7 +71,7 @@ function OnPlayerBreakingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockT
 end
 
 function OnChunkGenerating(World, ChunkX, ChunkZ, ChunkDesc)
-	local DistanceVector = (Vector3d(ChunkX, 0, ChunkZ) - WORLD_SPAWNS[World:GetName()])
+	local DistanceVector = Vector2dMinus(Vector2d(ChunkX, ChunkZ), WORLD_SPAWNS[World:GetName()])
 	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE then
 		GenerateChunkOutOfRange(ChunkDesc) -- Generate the chunk as the user says we should generate it.
@@ -81,13 +81,13 @@ end
 function OnPlayerMoving(Player)
 	local World = Player:GetWorld()
 	local WorldName = World:GetName()
-	local PlayerChunk = Vector3d(Player:GetChunkX(), 0, Player:GetChunkZ())
-	local PlayerCoords = Vector3d(Player:GetPosX(), 0, Player:GetPosZ())
-	local DistanceVector = (PlayerChunk - WORLD_SPAWNS[WorldName])
+	local PlayerChunk = Vector2d(Player:GetChunkX(), Player:GetChunkZ())
+	local PlayerCoords = Vector2d(Player:GetPosX(), Player:GetPosZ())
+	local DistanceVector = Vector2dMinus(PlayerChunk, WORLD_SPAWNS[WorldName])
 	local Distance = DistanceVector:Length()
 	if Distance > MAX_RANGE * 3 then 
 		-- It's not worth calculating where the player should spawn since he is far behind the border. 
-		--Just teleport him to spawn.
+		-- Just teleport him to spawn.
 		Player:TeleportToCoords(World:GetSpawnX(), World:GetSpawnY(), World:GetSpawnZ())
 	elseif Distance > MAX_RANGE then
 		local NewCoords = PlayerCoords
@@ -123,8 +123,8 @@ function CreateChunkData()
 	local CurrentLayer = 0
 	for Index, Content in pairs(Layers) do
 		local BlockType, BlockMeta = GetBlockTypeMeta(Content[2])
-		if not BlockType or not IsValidBlock(BlockType) then -- Skip this layer
-			LOGWARN("There is something wrong in the composition. Skipping layer " .. Content[1] .. "x" .. Content[2])
+		if not BlockType or not IsValidBlock(BlockType) then -- Skip this layer because the block isn't valid
+			LOGWARN('"' .. Content[2] .. '" isn\'t a valid block. Skipping layer ' .. Content[1] .. "x" .. Content[2])
 		else
 			BlockArea:FillRelCuboid(0, 15, CurrentLayer, CurrentLayer + Content[1] - 1, 0, 15, 3, BlockType, BlockMeta)
 			CurrentLayer = CurrentLayer + Content[1]
@@ -135,22 +135,12 @@ end
 
 function GetBlockTypeMeta(Blocks)
 	local Tonumber = tonumber(Blocks)
-	if Tonumber == nil then	
+	if Tonumber == nil then
 		local Item = cItem()
-		if StringToItem(Blocks, Item) == false then
-			return false
-		else
+		if StringToItem(Blocks, Item) then
 			return Item.m_ItemType, Item.m_ItemDamage
-		end
-		local Block = StringSplit(Blocks, ":")		
-		if tonumber(Block[1]) == nil then
-			return false
 		else
-			if Block[2] == nil then
-				return Block[1], 0
-			else
-				return Block[1], Block[2]
-			end
+			return false
 		end
 	else
 		return Tonumber, 0, true
@@ -165,4 +155,21 @@ function GenerateChunkOutOfRange(ChunkDesc)
 	ChunkDesc:SetUseDefaultStructures(false)
 	ChunkDesc:WriteBlockArea(CHUNK_EMPTY_CHUNK_DATA, 0, 0, 0)
 end
-			
+
+function Vector2dMinus(Vector1, Vector2)
+	return Vector2d(Vector1.x - Vector2.x, Vector1.z - Vector2.z)
+end
+
+function Vector2dPlus(Vector1, Vector2)
+	return Vector2d(Vector1.x + Vector2.x, Vector1.z + Vector2.z)
+end
+	
+function Vector2d(BlockX, BlockZ)
+	local Object = {}
+	Object.x = BlockX
+	Object.z = BlockZ
+	function Object:Length()
+		return math.sqrt(Object.x * Object.x + Object.z * Object.z)
+	end
+	return Object
+end
