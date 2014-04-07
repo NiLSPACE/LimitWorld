@@ -8,7 +8,6 @@ function GenerateChunkOutOfRange(ChunkDesc)
 	ChunkDesc:SetUseDefaultComposition(false)
 	ChunkDesc:SetUseDefaultFinish(false)
 	ChunkDesc:SetUseDefaultHeight(false)
-	ChunkDesc:SetUseDefaultStructures(false)
 	ChunkDesc:WriteBlockArea(CHUNK_EMPTY_CHUNK_DATA, 0, 0, 0)
 end
 
