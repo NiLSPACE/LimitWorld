@@ -3,30 +3,64 @@
 ---------------------------------------------------------
 
 
-function Vector2d(BlockX, BlockZ)
-	local Object = {}
-	Object.x = BlockX
-	Object.z = BlockZ
-	function Object:Length()
-	end
-	local MetaTable = {
-		__add = function (Vector1, Vector2)
-			return {x = Vector1.x + Vector2.x,
-			z = Vector1.z + Vector2.z, 
-			Length = function()
-				return math.sqrt(Object.x * Object.x + Object.z * Object.z)
-			end,
-			}
-		end,
-		__sub = function (Vector1, Vector2)
-			return {x = Vector1.x - Vector2.x,
-			z = Vector1.z - Vector2.z,
-			Length = function()
-				return math.sqrt(Object.x * Object.x + Object.z * Object.z)
-			end,
-			}
-		end
-	}
-	setmetatable(Object, MetaTable)
-	return Object
+
+
+
+Vector2d = {}
+
+
+
+
+
+function Vector2d:__call(a_X, a_Z)
+	local Obj = {}
+	
+	setmetatable(Obj, Vector2d)
+	Obj.__index = Obj
+	
+	Obj.x = a_X
+	Obj.z = a_Z
+	
+	return Obj
 end
+
+
+
+
+
+function Vector2d:__add(a_Vector2)
+	return Vector2d(
+		self.x + a_Vector2.x,
+		self.z + a_Vector2.z
+	)
+end
+
+
+
+
+
+function Vector2d:__sub(a_Vector2)
+	return Vector2d(
+		self.x - a_Vector2.x,
+		self.z - a_Vector2.z
+	)
+end
+
+
+
+
+
+function Vector2d:Length()
+	return math.sqrt(self.x * self.x + self.z * self.z)
+end
+
+
+
+
+
+setmetatable(Vector2d, Vector2d)
+Vector2d.__index = Vector2d
+
+
+
+
