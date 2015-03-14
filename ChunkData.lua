@@ -8,13 +8,13 @@ function GenerateChunkOutOfRange(ChunkDesc)
 	ChunkDesc:SetUseDefaultComposition(false)
 	ChunkDesc:SetUseDefaultFinish(false)
 	ChunkDesc:SetUseDefaultHeight(false)
-	ChunkDesc:WriteBlockArea(CHUNK_EMPTY_CHUNK_DATA, 0, 0, 0)
+	ChunkDesc:WriteBlockArea(g_ChunkComposition, 0, 0, 0)
 end
 
 
-function CreateChunkData()
+function CreateChunkData(a_CompositionString)
 	local BlockArea = cBlockArea()
-	local ChunkComposition = StringSplit(CHUNK_COMPISITION, ";")
+	local ChunkComposition = StringSplit(a_CompositionString, ";")
 	local Height = 0
 	local Layers = {}
 	for Index, Content in pairs(ChunkComposition) do -- Get the max height
@@ -37,5 +37,5 @@ function CreateChunkData()
 			CurrentLayer = CurrentLayer + Content[1]
 		end
 	end
-	CHUNK_EMPTY_CHUNK_DATA:CopyFrom(BlockArea)
+	g_ChunkComposition:CopyFrom(BlockArea)
 end

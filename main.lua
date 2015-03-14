@@ -3,10 +3,10 @@
 ---------------------------------------------------------
 
 
-MAX_RANGE = 10 -- The default range
-WORLD_SPAWNS = {} -- Table were all the coordinates for every world's spawn go.
-CHUNK_EMPTY_CHUNK_DATA = cBlockArea() -- This wil eventualy become the composition of a chunk that is not in range.
-CHUNK_COMPISITION = "" -- This string is where the user input for the composition will come.
+g_MaxRange         = 10 -- The default range
+g_WorldSpawns      = {} -- Table were all the coordinates for every world's spawn go.
+g_ChunkComposition = cBlockArea() -- This wil eventualy become the composition of a chunk that is not in range.
+g_PosCheckIsInside = nil -- The function that checks if a position in a world is inside the world limit
 
 function Initialize(Plugin)
 	PLUGIN = Plugin
@@ -19,16 +19,11 @@ function Initialize(Plugin)
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_RIGHT_CLICK, OnPlayerRightClick)
 	cPluginManager.AddHook(cPluginManager.HOOK_SPAWNING_ENTITY, OnSpawningEntity)
 	
-	cPluginManager.AddHook(cPluginManager.HOOK_WORLD_TICK, OnWorldTick) -- Needed to check the spawn of each world.
-	local IniFile = cIniFile()
-	if not (IniFile:ReadFile(Plugin:GetLocalFolder() .. "/Config.ini")) then
-		LOGWARN("[LIMITWORLD] Could not read the config file. Using default!")
-	end
-	MAX_RANGE = IniFile:GetValueSetF("General", "Range", 10)
-	CHUNK_COMPISITION = IniFile:GetValueSet("Chunk", "Composition", "61x7;1x8")
-	IniFile:WriteFile(Plugin:GetLocalFolder() .. "/Config.ini")
+	LoadConfig()
 	
-	CreateChunkData()
+	InitShape()
+	
+	CreateChunkData(g_Config.Chunk.ChunkComposition)
 	
 	LOG("Initialized LimitWorld")
 	return true
