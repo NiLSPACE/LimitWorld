@@ -21,7 +21,7 @@ local g_DefaultConfig =
 
 function LoadConfig()
 	local FilePath = cPluginManager:Get():GetCurrentPlugin():GetLocalFolder() .. "/config.cfg"
-	if (not cFile:Exists(FilePath)) then
+	if (not cFile:IsFile(FilePath)) then
 		LOGWARNING("[LimitWorld] The config file doesn't exist. LimitWorld will write and use the default settings")
 		WriteDefaultSettings(FilePath)
 		LoadDefaultSettings()
