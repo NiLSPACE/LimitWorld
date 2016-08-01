@@ -26,6 +26,10 @@ function OnPlayerRightClick(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, 
 		return false
 	end
 	
+	if (Player:HasPermission("limitworld.bypass")) then
+		return false
+	end
+	
 	local IsInside = g_PosCheckIsInside(Player:GetWorld(), math.floor(BlockX / 16), math.floor(BlockZ / 16))
 	if (not IsInside) then
 		return true
@@ -37,6 +41,10 @@ end
 
 
 function OnPlayerBreakingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockType, BlockMeta)
+	if (Player:HasPermission("limitworld.bypass")) then
+		return false
+	end
+	
 	local IsInside = g_PosCheckIsInside(Player:GetWorld(), math.floor(BlockX / 16), math.floor(BlockZ / 16))
 	if (not IsInside) then
 		return true
@@ -59,9 +67,11 @@ end
 
 
 function OnPlayerMoving(Player)
-	local World = Player:GetWorld()
+	if (Player:HasPermission("limitworld.bypass")) then
+		return false
+	end
 	
-	local IsInside, NewPos = g_PosCheckIsInside(World, Player:GetChunkX(), Player:GetChunkZ())
+	local IsInside, NewPos = g_PosCheckIsInside(Player:GetWorld(), Player:GetChunkX(), Player:GetChunkZ())
 	if (IsInside) then
 		return false
 	end
