@@ -75,6 +75,10 @@ function OnPlayerMoving(Player)
 	if (IsInside) then
 		return false
 	end
+	
+	-- Move the player slightly in the opposite direction.
+	local newPos = Player:GetPosition() - Player:GetSpeed()
+	Player:TeleportToCoords(newPos.x, newPos.y, newPos.z)
 	return true
 end
 
